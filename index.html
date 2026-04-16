@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Product Comparison Dashboard</title>
+
+<style>
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #0f2027, #2c5364, #1abc9c);
+    color: #fff;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.wrapper {
+    width: 95%;
+    max-width: 1100px;
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.card {
+    background: rgba(255,255,255,0.08);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 20px;
+}
+
+.form-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 10px;
+}
+
+input {
+    padding: 10px;
+    border-radius: 8px;
+    border: none;
+    width: 150px;
+}
+
+button {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.primary { background: #3498db; color: white; }
+.secondary { background: #2ecc71; color: white; }
+.danger { background: #e74c3c; color: white; }
+
+.table-container {
+    margin-top: 20px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    color: #333;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+th {
+    background: linear-gradient(135deg, #3498db, #2ecc71);
+    color: white;
+    padding: 10px;
+}
+
+td {
+    padding: 10px;
+    text-align: center;
+}
+
+tr:nth-child(even) {
+    background: #f2f9f9;
+}
+
+.delete-btn {
+    background: #e74c3c;
+    color: white;
+    padding: 5px 10px;
+}
+
+#methodDisplay {
+    margin-top: 15px;
+    text-align: center;
+    font-weight: bold;
+}
+</style>
+</head>
+
+<body>
+
+<div class="wrapper">
+    <h1>Product Comparison Dashboard</h1>
+
+    <div class="card">
+        <div class="form-row">
+            <input type="text" id="pName" placeholder="Product Name">
+            <input type="number" id="pPrice" placeholder="Price">
+            <input type="text" id="pCategory" placeholder="Category">
+        </div>
+
+        <div class="form-row">
+            <button class="primary" onclick="addInnerHTML()">Add (innerHTML)</button>
+            <button class="secondary" onclick="addDOM()">Add (DOM)</button>
+            <button class="danger" onclick="clearTable()">Clear</button>
+        </div>
+
+        <div class="form-row">
+            <button class="primary" onclick="testPerformance('innerHTML')">Test innerHTML</button>
+            <button class="secondary" onclick="testPerformance('DOM')">Test DOM</button>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Price</th>
+                    <th>Category</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+    </div>
+
+    <p id="methodDisplay"></p>
+</div>
+
+<script>
+const tbody = document.getElementById("tableBody");
+
+
+// ------------------ GENERATOR FUNCTION ------------------
+function generateManyProducts(count) {
+    let products = [];
+    for (let i = 1; i <= count; i++) {
+        products.push({
+            name: "Product " + i,
+            price: Math.floor(Math.random() * 100),
+            category: "Category " + (i % 5 + 1)
+        });
+    }
+    return products;
+}
+
+
+// ------------------ METHOD 1: innerHTML ------------------
+function addInnerHTML(name, price, cat) {
+    const n = name || document.getElementById("pName").value;
+    const p = price || document.getElementById("pPrice").value;
+    const c = cat || document.getElementById("pCategory").value;
+
+    const rowHTML = `<tr>
+        <td>${n}</td>
+        <td>${p}</td>
+        <td>${c}</td>
+        <td><button class="delete-btn" onclick="this.parentElement.parentElement.remove()">Delete</button></td>
+    </tr>`;
+
+    tbody.innerHTML += rowHTML;
+
+    document.getElementById("methodDisplay").textContent = "Method Used: innerHTML";
+}
+
+
+// ------------------ METHOD 2: DOM ------------------
+function addDOM(name, price, cat) {
+    const n = name || document.getElementById("pName").value;
+    const p = price || document.getElementById("pPrice").value;
+    const c = cat || document.getElementById("pCategory").value;
+
+    const tr = document.createElement("tr");
+
+    const tdName = document.createElement("td");
+    tdName.textContent = n;
+
+    const tdPrice = document.createElement("td");
+    tdPrice.textContent = p;
+
+    const tdCat = document.createElement("td");
+    tdCat.textContent = c;
+
+    const tdAction = document.createElement("td");
+    const btn = document.createElement("button");
+    btn.textContent = "Delete";
+    btn.className = "delete-btn";
+    btn.onclick = function () {
+        tr.remove();
+    };
+
+    tdAction.appendChild(btn);
+
+    tr.append(tdName, tdPrice, tdCat, tdAction);
+    tbody.appendChild(tr);
+
+    document.getElementById("methodDisplay").textContent = "Method Used: DOM Methods";
+}
+
+
+// ------------------ PERFORMANCE TEST ------------------
+function testPerformance(type) {
+    clearTable();
+
+    const products = generateManyProducts(100);
+
+    if (type === "innerHTML") {
+        console.time("innerHTML");
+
+        products.forEach(p => {
+            addInnerHTML(p.name, p.price, p.category);
+        });
+
+        console.timeEnd("innerHTML");
+
+    } else {
+        console.time("DOM");
+
+        products.forEach(p => {
+            addDOM(p.name, p.price, p.category);
+        });
+
+        console.timeEnd("DOM");
+    }
+
+    document.getElementById("methodDisplay").textContent =
+        `Method Used: ${type} (Performance Test)`;
+}
+
+
+// ------------------ CLEAR ------------------
+function clearTable() {
+    tbody.innerHTML = "";
+    document.getElementById("methodDisplay").textContent = "";
+}
+</script>
+
+</body>
+</html>
